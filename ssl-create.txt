@@ -1,0 +1,56 @@
+一：修改open配置：vi /etc/pki/tls/openssl.cnf
+1、主要是CA_default段和policy_match段
+2、初始化两个文件：
+	#cd /etc/pki/CA/
+	# touch index.txt serial ；
+	# echo 01 > serial
+
+二：生成CA根秘钥
+# cd /etc/pki/CA/
+# openssl genrsa -out private/cakey.pem 2048
+
+三：生成CA根证书：
+# openssl req -new -x509 -key private/cakey.pem -out cacert.pem
+上面的自签证书cacert.pem应该生成在/etc/pki/CA下
+
+四：生成nginx使用的秘钥：
+# cd /etc/nginx/ssl
+# openssl genrsa -out nginx.key 2048
+
+五：生成nginx证书签署请求
+# openssl req -new -key nginx.key -out nginx.csr
+...
+Country Name (2 letter code) [AU]:CN
+State or Province Name (full name) [Some-State]:GD
+Locality Name (eg, city) []:SZ
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:COMPANY
+Organizational Unit Name (eg, section) []:IT_SECTION
+Common Name (e.g. server FQDN or YOUR name) []:your.domain.com
+Email Address []:
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:
+...
+
+六：利用CA根证书对nginx证书进行签名
+接下来要把上一步生成的证书请求csr文件，发到CA服务器上，在CA上执行
+# openssl ca -in nginx.csr -out nginx.crt
+
+另外在极少数情况下，上面的命令生成的证书不能识别，试试下面的命令：
+# openssl x509 -req -in server.csr -CA /etc/pki/CA/cacert.pem -CAkey /etc/pki/CA/private/cakey.pem -CAcreateserial -out server.crt
+
+上面签发过程其实默认使用了-cert cacert.pem -keyfile cakey.pem，这两个文件就是前两步生成的位于/etc/pki/CA下的根密钥和根证书。将生成的crt证书发回nginx服务器使用。
+
+
+七：在linux导入CA根证书
+# cp /etc/pki/tls/certs/ca-bundle.crt{,.bak}    备份以防出错
+# cat /etc/pki/CA/cacert.pem >> /etc/pki/tls/certs/ca-bundle.crt
+
+
+
+
+
+
+
