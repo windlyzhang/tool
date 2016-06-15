@@ -36,10 +36,10 @@ An optional company name []:
 
 六：利用CA根证书对nginx证书进行签名
 接下来要把上一步生成的证书请求csr文件，发到CA服务器上，在CA上执行
-# openssl ca -in nginx.csr -out nginx.crt
+# openssl ca -in nginx.csr -out nginx.crt -days 365
 
 另外在极少数情况下，上面的命令生成的证书不能识别，试试下面的命令：
-# openssl x509 -req -in server.csr -CA /etc/pki/CA/cacert.pem -CAkey /etc/pki/CA/private/cakey.pem -CAcreateserial -out server.crt
+# openssl x509 -req -days 365 -in server.csr -CA /etc/pki/CA/cacert.pem -CAkey /etc/pki/CA/private/cakey.pem -CAcreateserial -out server.crt
 
 上面签发过程其实默认使用了-cert cacert.pem -keyfile cakey.pem，这两个文件就是前两步生成的位于/etc/pki/CA下的根密钥和根证书。将生成的crt证书发回nginx服务器使用。
 
