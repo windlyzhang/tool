@@ -27,4 +27,4 @@ read index
 echo -e "\e[1;31m ++++ ${host[$index]} ++++\e[0m"
 echo
 
-ssh "feng.zhang@${host[$index]}"
+ssh "root@${host[$index]}"
